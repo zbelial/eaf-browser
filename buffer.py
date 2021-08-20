@@ -63,6 +63,14 @@ class AppBuffer(BrowserBuffer):
                                                             "darkreader",
                                                             "darkreader.js")).read()
 
+        self.jquery_js = None
+        self.annotator_js = None
+        self.annotator_store_js = None
+        self.annotator_tags_js = None
+        self.showdown_js = None
+        self.annotator_markdown_js = None
+        self.eaf_annotator_js = None
+
         self.close_page.connect(self.record_close_page)
 
         self.buffer_widget.titleChanged.connect(self.change_title)
@@ -150,6 +158,7 @@ class AppBuffer(BrowserBuffer):
             self.buffer_widget.load_dark_mode_js()
             self.buffer_widget.enable_dark_mode()
 
+            
         if progress < 100:
             # Update progress.
             self.caret_js_ready = False
@@ -194,6 +203,8 @@ class AppBuffer(BrowserBuffer):
         self.init_pw_autofill()
         if get_emacs_var("eaf-browser-enable-adblocker"):
             self.load_adblocker()
+        if get_emacs_var("eaf-browser-enable-annotator"):
+            self.enable_annotator()
 
     def handle_input_response(self, callback_tag, result_content):
         ''' Handle input message.'''
@@ -262,6 +273,49 @@ class AppBuffer(BrowserBuffer):
                     message_to_emacs("No page need recovery.")
         else:
             message_to_emacs("No page need recovery.")
+
+
+    def enable_annotator(self):
+        self.jquery_js = open(os.path.join(os.path.dirname(__file__),
+                                           "js",
+                                           "jquery",
+                                           "jquery.js")).read()
+        self.annotator_js = open(os.path.join(os.path.dirname(__file__),
+                                              "js",
+                                              "annotator",
+                                              "annotator.js")).read()
+        self.annotator_store_js = open(os.path.join(os.path.dirname(__file__),
+                                                    "js",
+                                                    "annotator",
+                                                    "annotator.store.js")).read()
+        self.annotator_tags_js = open(os.path.join(os.path.dirname(__file__),
+                                                   "js",
+                                                   "annotator",
+                                                   "annotator.tags.js")).read()
+        self.showdown_js = open(os.path.join(os.path.dirname(__file__),
+                                                       "js",
+                                                       "annotator",
+                                                       "showdown.js")).read()
+        self.annotator_markdown_js = open(os.path.join(os.path.dirname(__file__),
+                                                       "js",
+                                                       "annotator",
+                                                       "annotator.markdown.js")).read()
+        self.eaf_annotator_js = open(os.path.join(os.path.dirname(__file__),
+                                                  "js",
+                                                  "annotator.js")).read()
+
+        self.buffer_widget.eval_js(self.jquery_js)
+        self.buffer_widget.eval_js(self.annotator_js)
+        self.buffer_widget.load_css(os.path.join(os.path.dirname(__file__),
+                                                 "js",
+                                                 "annotator",
+                                                 "annotator.css"), 'annotator')
+        self.buffer_widget.eval_js(self.annotator_store_js)
+        self.buffer_widget.eval_js(self.annotator_tags_js)
+        self.buffer_widget.eval_js(self.showdown_js)
+        self.buffer_widget.eval_js(self.annotator_markdown_js)
+        self.buffer_widget.eval_js(self.eaf_annotator_js)
+
 
     def load_adblocker(self):
         self.buffer_widget.load_css(os.path.join(os.path.dirname(__file__), "adblocker.css"),'adblocker')

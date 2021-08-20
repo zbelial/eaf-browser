@@ -121,6 +121,10 @@ and will re-open them when calling `eaf-browser-restore-buffers' in the future s
   ""
   :type 'boolean)
 
+(defcustom eaf-browser-enable-annotator nil
+  ""
+  :type 'boolean)
+
 (defcustom eaf-browser-enable-adblocker nil
   ""
   :type 'boolean)
