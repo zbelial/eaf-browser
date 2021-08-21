@@ -10,9 +10,10 @@ function includeJs(jsFilePath) {
 console.log("before jQuery");
 
 jQuery(function ($) {
-    $(document.body).annotator()
-        .annotator('addPlugin', 'Markdown')
-        .annotator('addPlugin', 'Tags');
+    var anno = $(document.body).annotator();
+
+    anno.annotator('addPlugin', 'Markdown')
+    anno.annotator('addPlugin', 'Tags');
 });
 
 console.log("after jQuery");

@@ -310,6 +310,9 @@ class AppBuffer(BrowserBuffer):
                                                  "js",
                                                  "annotator",
                                                  "annotator.css"), 'annotator')
+        self.buffer_widget.load_css(os.path.join(os.path.dirname(__file__),
+                                                 "js",
+                                                 "annotator.css"), 'eaf-annotator')
         self.buffer_widget.eval_js(self.annotator_store_js)
         self.buffer_widget.eval_js(self.annotator_tags_js)
         self.buffer_widget.eval_js(self.showdown_js)

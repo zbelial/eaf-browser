@@ -1613,9 +1613,10 @@
     };
 
     Editor.prototype.processKeypress = function(event) {
+      console.log(event);
       if (event.keyCode === 27) {
         return this.hide();
-      } else if (event.keyCode === 13 && !event.shiftKey) {
+      } else if (event.keyCode === 13 && event.ctrlKey) {
         return this.submit();
       }
     };
