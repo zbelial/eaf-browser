@@ -20,7 +20,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from PyQt5 import QtCore, QtWidgets
-from PyQt5.QtCore import QUrl, QTimer
+from PyQt5.QtCore import QUrl, QTimer, QFileInfo
 from PyQt5.QtGui import QColor, QCursor, QScreen
 from core.webengine import BrowserBuffer
 from core.utils import touch, interactive, is_port_in_use, eval_in_emacs, message_to_emacs, set_emacs_var, translate_text, open_url_in_new_tab, get_emacs_var, get_emacs_config_dir
@@ -32,6 +32,7 @@ import sqlite3
 import subprocess
 import threading
 import time
+import hashlib
 
 class AppBuffer(BrowserBuffer):
     def __init__(self, buffer_id, url, arguments):
@@ -276,6 +277,12 @@ class AppBuffer(BrowserBuffer):
 
 
     def enable_annotator(self):
+        print("url {0}".format(self.buffer_widget.url()))
+        
+        if not self.buffer_widget.url().isLocalFile():
+            message_to_emacs("Cannot add annotation to remote files.")
+            return
+
         self.jquery_js = open(os.path.join(os.path.dirname(__file__),
                                            "js",
                                            "jquery",
@@ -300,10 +307,6 @@ class AppBuffer(BrowserBuffer):
                                                        "js",
                                                        "annotator",
                                                        "annotator.markdown.js")).read()
-        self.eaf_annotator_js = open(os.path.join(os.path.dirname(__file__),
-                                                  "js",
-                                                  "annotator.js")).read()
-
         self.buffer_widget.eval_js(self.jquery_js)
         self.buffer_widget.eval_js(self.annotator_js)
         self.buffer_widget.load_css(os.path.join(os.path.dirname(__file__),
@@ -317,6 +320,26 @@ class AppBuffer(BrowserBuffer):
         self.buffer_widget.eval_js(self.annotator_tags_js)
         self.buffer_widget.eval_js(self.showdown_js)
         self.buffer_widget.eval_js(self.annotator_markdown_js)
+
+        # 设置一些需要的变量
+        ## file_name_md5
+        ## file_uri
+
+        file_name = QFileInfo(self.buffer_widget.url().toLocalFile()).fileName()
+        print("file_name {0}".format(file_name))
+
+        ## get annotator server port
+        annotator_server_port = get_emacs_var("eaf-browser-annotator-server-port")
+
+        self.buffer_widget.eval_js("var file_uri='{0}';".format(self.url))
+        # self.buffer_widget.eval_js("var file_name_md5='{0}';".format(hashlib.md5(file_name.encode()).hexdigest()))
+        self.buffer_widget.eval_js("var file_name_md5='{0}';".format("abc"))
+        self.buffer_widget.eval_js("var annotator_server_port='{0}';".format(annotator_server_port))
+
+        self.eaf_annotator_js = open(os.path.join(os.path.dirname(__file__),
+                                                  "js",
+                                                  "annotator.js")).read()
+
         self.buffer_widget.eval_js(self.eaf_annotator_js)
 
 

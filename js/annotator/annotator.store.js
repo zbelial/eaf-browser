@@ -176,7 +176,9 @@
       var id, options, request, url;
       id = obj && obj.id;
       url = this._urlFor(action, id);
+        console.log('url: ' + url)  
       options = this._apiRequestOptions(action, obj, onSuccess);
+        console.log('options: ' + options)  
       request = $.ajax(url, options);
       request._id = id;
       request._action = action;
