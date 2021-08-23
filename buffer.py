@@ -294,7 +294,7 @@ class AppBuffer(BrowserBuffer):
         self.annotator_store_js = open(os.path.join(os.path.dirname(__file__),
                                                     "js",
                                                     "annotator",
-                                                    "annotator.store.js")).read()
+                                                    "annotator.store.eaf.js")).read()
         self.annotator_tags_js = open(os.path.join(os.path.dirname(__file__),
                                                    "js",
                                                    "annotator",
@@ -332,8 +332,8 @@ class AppBuffer(BrowserBuffer):
         annotator_server_port = get_emacs_var("eaf-browser-annotator-server-port")
 
         self.buffer_widget.eval_js("var file_uri='{0}';".format(self.url))
-        # self.buffer_widget.eval_js("var file_name_md5='{0}';".format(hashlib.md5(file_name.encode()).hexdigest()))
-        self.buffer_widget.eval_js("var file_name_md5='{0}';".format("abc"))
+        self.buffer_widget.eval_js("var file_name_md5='{0}';".format(hashlib.md5(file_name.encode()).hexdigest()))
+        # self.buffer_widget.eval_js("var file_name_md5='{0}';".format("abc"))
         self.buffer_widget.eval_js("var annotator_server_port='{0}';".format(annotator_server_port))
 
         self.eaf_annotator_js = open(os.path.join(os.path.dirname(__file__),

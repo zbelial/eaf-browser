@@ -20,21 +20,10 @@
 
         StoreEAF.prototype.options = {
             annotationData: {},
-            emulateHTTP: false,
-            loadFromSearch: false,
-            // prefix: '/store',
-            // urls: {
-            //   create: '/annotations',
-            //   read: '/annotations/:id',
-            //   update: '/annotations/:id',
-            //   destroy: '/annotations/:id',
-            //   search: '/search'
-            // }
+            fileMD5 : '',
         };
 
         function StoreEAF(element, options) {
-            this._onError = __bind(this._onError, this);
-            this._onLoadAnnotationsFromSearch = __bind(this._onLoadAnnotationsFromSearch, this);
             this._onLoadAnnotations = __bind(this._onLoadAnnotations, this);
             this._getAnnotations = __bind(this._getAnnotations, this);
 
@@ -55,23 +44,22 @@
         };
 
         StoreEAF.prototype._getAnnotations = function() {
-            if (this.options.loadFromSearch) {
-                return this.loadAnnotationsFromSearch(this.options.loadFromSearch);
-            } else {
-                return this.loadAnnotations();
-            }
+            return this.loadAnnotations();
         };
 
         StoreEAF.prototype.annotationCreated = function(annotation) {
             var _this = this;
+            console.log('annotationCreated');
+            console.log(annotation);
             if (__indexOf.call(this.annotations, annotation) < 0) {
                 this.registerAnnotation(annotation);
-                return this._apiRequest('create', annotation, function(data) {
-                    if (data.id == null) {
-                        console.warn(Annotator._t("Warning: No ID returned from server for annotation "), annotation);
-                    }
-                    return _this.updateAnnotation(annotation, data);
-                });
+                // TODO
+                // return this._apiRequest('create', annotation, function(data) {
+                //     if (data.id == null) {
+                //         console.warn(Annotator._t("Warning: No ID returned from server for annotation "), annotation);
+                //     }
+                //     return _this.updateAnnotation(annotation, data);
+                // });
             } else {
                 return this.updateAnnotation(annotation, {});
             }
@@ -79,19 +67,25 @@
 
         StoreEAF.prototype.annotationUpdated = function(annotation) {
             var _this = this;
+            console.log('annotationUpdated');
+            console.log(annotation);
             if (__indexOf.call(this.annotations, annotation) >= 0) {
-                return this._apiRequest('update', annotation, (function(data) {
-                    return _this.updateAnnotation(annotation, data);
-                }));
+                // TODO
+                // return this._apiRequest('update', annotation, (function(data) {
+                //     return _this.updateAnnotation(annotation, data);
+                // }));
             }
         };
 
         StoreEAF.prototype.annotationDeleted = function(annotation) {
+            console.log('annotationDeleted');
+            console.log(annotation);
             var _this = this;
             if (__indexOf.call(this.annotations, annotation) >= 0) {
-                return this._apiRequest('destroy', annotation, (function() {
-                    return _this.unregisterAnnotation(annotation);
-                }));
+                // TODO
+                // return this._apiRequest('destroy', annotation, (function() {
+                //     return _this.unregisterAnnotation(annotation);
+                // }));
             }
         };
 
@@ -113,7 +107,10 @@
         };
 
         StoreEAF.prototype.loadAnnotations = function() {
-            return this._apiRequest('read', null, this._onLoadAnnotations);
+            var fileMD5 = this.options.fileMD5
+            console.log('loadAnnotations: ' + fileMD5);
+            // TODO
+            // return this._apiRequest('read', null, this._onLoadAnnotations);
         };
 
         StoreEAF.prototype._onLoadAnnotations = function(data) {
@@ -141,17 +138,6 @@
             return this.annotator.loadAnnotations(newData.slice());
         };
 
-        StoreEAF.prototype.loadAnnotationsFromSearch = function(searchOptions) {
-            return this._apiRequest('search', searchOptions, this._onLoadAnnotationsFromSearch);
-        };
-
-        StoreEAF.prototype._onLoadAnnotationsFromSearch = function(data) {
-            if (data == null) {
-                data = {};
-            }
-            return this._onLoadAnnotations(data.rows || []);
-        };
-
         StoreEAF.prototype.dumpAnnotations = function() {
             var ann, _i, _len, _ref, _results;
             _ref = this.annotations;
@@ -161,79 +147,6 @@
                 _results.push(JSON.parse(this._dataFor(ann)));
             }
             return _results;
-        };
-
-        StoreEAF.prototype._apiRequest = function(action, obj, onSuccess) {
-            var id, options, request, url;
-            id = obj && obj.id;
-            url = this._urlFor(action, id);
-            console.log('url: ' + url)  
-            options = this._apiRequestOptions(action, obj, onSuccess);
-            console.log('options: ' + options)  
-            request = $.ajax(url, options);
-            request._id = id;
-            request._action = action;
-            return request;
-        };
-
-        StoreEAF.prototype._apiRequestOptions = function(action, obj, onSuccess) {
-            var data, method, opts;
-            method = this._methodFor(action);
-            opts = {
-                type: method,
-                headers: this.element.data('annotator:headers'),
-                dataType: "json",
-                success: onSuccess || function() {},
-                error: this._onError
-            };
-            if (this.options.emulateHTTP && (method === 'PUT' || method === 'DELETE')) {
-                opts.headers = $.extend(opts.headers, {
-                    'X-HTTP-Method-Override': method
-                });
-                opts.type = 'POST';
-            }
-            if (action === "search") {
-                opts = $.extend(opts, {
-                    data: obj
-                });
-                return opts;
-            }
-            data = obj && this._dataFor(obj);
-            if (this.options.emulateJSON) {
-                opts.data = {
-                    json: data
-                };
-                if (this.options.emulateHTTP) {
-                    opts.data._method = method;
-                }
-                return opts;
-            }
-            opts = $.extend(opts, {
-                data: data,
-                contentType: "application/json; charset=utf-8"
-            });
-            return opts;
-        };
-
-        StoreEAF.prototype._urlFor = function(action, id) {
-            var url;
-            url = this.options.prefix != null ? this.options.prefix : '';
-            url += this.options.urls[action];
-            url = url.replace(/\/:id/, id != null ? '/' + id : '');
-            url = url.replace(/:id/, id != null ? id : '');
-            return url;
-        };
-
-        StoreEAF.prototype._methodFor = function(action) {
-            var table;
-            table = {
-                'create': 'POST',
-                'read': 'GET',
-                'update': 'PUT',
-                'destroy': 'DELETE',
-                'search': 'GET'
-            };
-            return table[action];
         };
 
         StoreEAF.prototype._dataFor = function(annotation) {
@@ -246,29 +159,6 @@
                 annotation.highlights = highlights;
             }
             return data;
-        };
-
-        StoreEAF.prototype._onError = function(xhr) {
-            var action, message;
-            action = xhr._action;
-            message = Annotator._t("Sorry we could not ") + action + Annotator._t(" this annotation");
-            if (xhr._action === 'search') {
-                message = Annotator._t("Sorry we could not search the store for annotations");
-            } else if (xhr._action === 'read' && !xhr._id) {
-                message = Annotator._t("Sorry we could not ") + action + Annotator._t(" the annotations from the store");
-            }
-            switch (xhr.status) {
-            case 401:
-                message = Annotator._t("Sorry you are not allowed to ") + action + Annotator._t(" this annotation");
-                break;
-            case 404:
-                message = Annotator._t("Sorry we could not connect to the annotations store");
-                break;
-            case 500:
-                message = Annotator._t("Sorry something went wrong with the annotation store");
-            }
-            Annotator.showNotification(message, Annotator.Notification.ERROR);
-            return console.error(Annotator._t("API request failed:") + (" '" + xhr.status + "'"));
         };
 
         return StoreEAF;
