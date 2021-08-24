@@ -47,12 +47,31 @@
 (defcustom eaf-browser-enable-annotator nil
   ""
   :type 'boolean)
-
 ;; (setq eaf-browser-enable-annotator t)
+
+(defcustom eaf-browser-enable-annotator-tags-plugin t
+  ""
+  :type 'boolean)
+
+(defcustom eaf-browser-enable-annotator-markdown-plugin nil
+  ""
+  :type 'boolean)
 
 
 (defun eaf-browser-annotator-create (annotation)
-  (message "annotation %S" annotation)
+  (message "create annotation %S" annotation)
+  )
+
+(defun eaf-browser-annotator-update (annotation)
+  (message "update annotation %S" annotation)
+  )
+
+(defun eaf-browser-annotator-delete (annotation)
+  (message "delete annotation %S" annotation)
+  )
+
+(defun eaf-browser-annotator-load (file-name file-md5)
+  (message "load annotations %s, %s" file-name file-md5)
   )
 
 (provide 'eaf-browser-annotator)

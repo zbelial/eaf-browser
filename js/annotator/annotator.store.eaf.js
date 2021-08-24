@@ -20,7 +20,9 @@
 
         StoreEAF.prototype.options = {
             annotationData: {},
-            fileMD5 : '',
+            fileNameMD5 : '',
+            fileFullName : '',
+            pyobject: {},
         };
 
         function StoreEAF(element, options) {
@@ -36,6 +38,7 @@
             if (!Annotator.supported()) {
                 return;
             }
+            console.log('StoreEAF pluginInit');
             if (this.annotator.plugins.Auth) {
                 return this.annotator.plugins.Auth.withToken(this._getAnnotations);
             } else {
@@ -52,17 +55,13 @@
             console.log('annotationCreated');
             console.log(annotation);
             if (__indexOf.call(this.annotations, annotation) < 0) {
+                console.log('new annotation');
                 this.registerAnnotation(annotation);
 
-                eval_emacs_function('eaf-browser-annotator-create', annotation);
                 // TODO
-                // return this._apiRequest('create', annotation, function(data) {
-                //     if (data.id == null) {
-                //         console.warn(Annotator._t("Warning: No ID returned from server for annotation "), annotation);
-                //     }
-                //     return _this.updateAnnotation(annotation, data);
-                // });
+                window.pyobject.eval_emacs_function('eaf-browser-annotator-create', [annotation]);
             } else {
+                console.log('old annotation');
                 return this.updateAnnotation(annotation, {});
             }
         };
@@ -73,9 +72,7 @@
             console.log(annotation);
             if (__indexOf.call(this.annotations, annotation) >= 0) {
                 // TODO
-                // return this._apiRequest('update', annotation, (function(data) {
-                //     return _this.updateAnnotation(annotation, data);
-                // }));
+                window.pyobject.eval_emacs_function('eaf-browser-annotator-update', [annotation]);
             }
         };
 
@@ -85,9 +82,7 @@
             var _this = this;
             if (__indexOf.call(this.annotations, annotation) >= 0) {
                 // TODO
-                // return this._apiRequest('destroy', annotation, (function() {
-                //     return _this.unregisterAnnotation(annotation);
-                // }));
+                window.pyobject.eval_emacs_function('eaf-browser-annotator-delete', [annotation]);
             }
         };
 
@@ -109,10 +104,13 @@
         };
 
         StoreEAF.prototype.loadAnnotations = function() {
-            var fileMD5 = this.options.fileMD5
-            console.log('loadAnnotations: ' + fileMD5);
+            var fileNameMD5 = this.options.fileNameMD5;
+            var fileFullName = this.options.fileFullName;
+            console.log('loadAnnotations: fileNameMD5 ' + fileNameMD5 + ', fileFullName: ' + fileFullName);
             // TODO
             // return this._apiRequest('read', null, this._onLoadAnnotations);
+            window.pyobject.eval_emacs_function('eaf-browser-annotator-load', [fileFullName, fileNameMD5]);
+            // this.options.pyobject.eval_emacs_function('eaf-browser-annotator-load', [fileFullName, fileNameMD5]);
         };
 
         StoreEAF.prototype._onLoadAnnotations = function(data) {

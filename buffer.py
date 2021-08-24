@@ -277,11 +277,14 @@ class AppBuffer(BrowserBuffer):
 
 
     def enable_annotator(self):
-        print("url {0}".format(self.buffer_widget.url()))
+        print("url {0}".format(self.url))
         
         if not self.buffer_widget.url().isLocalFile():
             message_to_emacs("Cannot add annotation to remote files.")
             return
+
+        enable_tags_plugin = get_emacs_var("eaf-browser-enable-annotator-tags-plugin")
+        enable_markdown_plugin = get_emacs_var("eaf-browser-enable-annotator-markdown-plugin")
 
         self.jquery_js = open(os.path.join(os.path.dirname(__file__),
                                            "js",
@@ -295,18 +298,24 @@ class AppBuffer(BrowserBuffer):
                                                     "js",
                                                     "annotator",
                                                     "annotator.store.eaf.js")).read()
-        self.annotator_tags_js = open(os.path.join(os.path.dirname(__file__),
-                                                   "js",
-                                                   "annotator",
-                                                   "annotator.tags.js")).read()
-        self.showdown_js = open(os.path.join(os.path.dirname(__file__),
+        if enable_tags_plugin:
+            self.annotator_tags_js = open(os.path.join(os.path.dirname(__file__),
                                                        "js",
                                                        "annotator",
-                                                       "showdown.js")).read()
-        self.annotator_markdown_js = open(os.path.join(os.path.dirname(__file__),
-                                                       "js",
-                                                       "annotator",
-                                                       "annotator.markdown.js")).read()
+                                                       "annotator.tags.js")).read()
+        if enable_markdown_plugin:
+            self.showdown_js = open(os.path.join(os.path.dirname(__file__),
+                                                 "js",
+                                                 "annotator",
+                                                 "showdown.js")).read()
+            self.annotator_markdown_js = open(os.path.join(os.path.dirname(__file__),
+                                                           "js",
+                                                           "annotator",
+                                                           "annotator.markdown.js")).read()
+        self.qwebchannel_js = open(os.path.join(os.path.dirname(__file__),
+                                                       "node_modules",
+                                                       "qwebchannel",
+                                                       "qwebchannel.js")).read()
         self.buffer_widget.eval_js(self.jquery_js)
         self.buffer_widget.eval_js(self.annotator_js)
         self.buffer_widget.load_css(os.path.join(os.path.dirname(__file__),
@@ -316,23 +325,35 @@ class AppBuffer(BrowserBuffer):
         self.buffer_widget.load_css(os.path.join(os.path.dirname(__file__),
                                                  "js",
                                                  "annotator.css"), 'eaf-annotator')
+        self.buffer_widget.eval_js(self.qwebchannel_js)
         self.buffer_widget.eval_js(self.annotator_store_js)
-        self.buffer_widget.eval_js(self.annotator_tags_js)
-        self.buffer_widget.eval_js(self.showdown_js)
-        self.buffer_widget.eval_js(self.annotator_markdown_js)
+        if enable_tags_plugin:
+            self.buffer_widget.eval_js(self.annotator_tags_js)
+            self.buffer_widget.eval_js("var enable_tags_plugin = true;")
+        else:
+            self.buffer_widget.eval_js("var enable_tags_plugin = false;")
+            
+        if enable_markdown_plugin:
+            self.buffer_widget.eval_js(self.showdown_js)
+            self.buffer_widget.eval_js(self.annotator_markdown_js)
+            self.buffer_widget.eval_js("var enable_markdown_plugin = true;")
+        else:
+            self.buffer_widget.eval_js("var enable_markdown_plugin = false;")
 
         # 设置一些需要的变量
         ## file_name_md5
         ## file_uri
 
-        file_name = QFileInfo(self.buffer_widget.url().toLocalFile()).fileName()
+        file_info = QFileInfo(self.buffer_widget.url().toLocalFile())
+        file_name = file_info.fileName()
+        file_full_name = file_info.absoluteFilePath()
         print("file_name {0}".format(file_name))
+        print("file_full_name {0}".format(file_full_name))
 
-        ## get annotator server port
 
         self.buffer_widget.eval_js("var file_uri='{0}';".format(self.url))
         self.buffer_widget.eval_js("var file_name_md5='{0}';".format(hashlib.md5(file_name.encode()).hexdigest()))
-        # self.buffer_widget.eval_js("var file_name_md5='{0}';".format("abc"))
+        self.buffer_widget.eval_js("var file_full_name='{0}';".format(file_full_name))
 
         self.eaf_annotator_js = open(os.path.join(os.path.dirname(__file__),
                                                   "js",

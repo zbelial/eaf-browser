@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "qwebchannel": "^5.9.0",
     "@mozilla/readability": "^0.4.1",
     "darkreader": "^4.9.34"
   }
