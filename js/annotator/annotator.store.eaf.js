@@ -53,6 +53,8 @@
             console.log(annotation);
             if (__indexOf.call(this.annotations, annotation) < 0) {
                 this.registerAnnotation(annotation);
+
+                eval_emacs_function('eaf-browser-annotator-create', annotation);
                 // TODO
                 // return this._apiRequest('create', annotation, function(data) {
                 //     if (data.id == null) {

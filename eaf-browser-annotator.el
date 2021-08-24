@@ -44,7 +44,15 @@
 
 (require 'cl-lib)
 
+(defcustom eaf-browser-enable-annotator nil
+  ""
+  :type 'boolean)
+
+;; (setq eaf-browser-enable-annotator t)
+
+
 (defun eaf-browser-annotator-create (annotation)
+  (message "annotation %S" annotation)
   )
 
 (provide 'eaf-browser-annotator)
