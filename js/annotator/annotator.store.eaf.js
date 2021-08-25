@@ -59,7 +59,12 @@
                 this.registerAnnotation(annotation);
 
                 // TODO
-                window.pyobject.eval_emacs_function('eaf-browser-annotator-create', [annotation]);
+                var data = window.pyobject.eval_emacs_function('eaf-browser-annotator-create', [_this.options.fileNameMD5, JSON.stringify(annotation)]);
+                console.log(data)
+                console.log(JSON.parse(data))
+                if (data) {
+                    return _this.updateAnnotation(annotation, JSON.parse(data))
+                }
             } else {
                 console.log('old annotation');
                 return this.updateAnnotation(annotation, {});
@@ -72,7 +77,7 @@
             console.log(annotation);
             if (__indexOf.call(this.annotations, annotation) >= 0) {
                 // TODO
-                window.pyobject.eval_emacs_function('eaf-browser-annotator-update', [annotation]);
+                window.pyobject.eval_emacs_function('eaf-browser-annotator-update', [_this.options.fileNameMD5, annotation.id, JSON.stringify(annotation)]);
             }
         };
 
@@ -82,7 +87,7 @@
             var _this = this;
             if (__indexOf.call(this.annotations, annotation) >= 0) {
                 // TODO
-                window.pyobject.eval_emacs_function('eaf-browser-annotator-delete', [annotation]);
+                window.pyobject.eval_emacs_function('eaf-browser-annotator-delete', [_this.options.fileNameMD5, annotation.id]);
             }
         };
 
