@@ -57,14 +57,24 @@
             if (__indexOf.call(this.annotations, annotation) < 0) {
                 console.log('new annotation');
                 this.registerAnnotation(annotation);
+                var highlights = annotation.highlights
 
+                // console.log(_this.options.fileNameMD5)
+                // console.log(annotation)
                 // TODO
-                var data = window.pyobject.eval_emacs_function('eaf-browser-annotator-create', [_this.options.fileNameMD5, JSON.stringify(annotation)]);
-                console.log(data)
-                console.log(JSON.parse(data))
-                if (data) {
-                    return _this.updateAnnotation(annotation, JSON.parse(data))
-                }
+                var anno = this._dataFor(annotation)
+                window.pyobject.eval_emacs_function_return('eaf-browser-annotator-create', [_this.options.fileNameMD5, anno], function (data) {
+                    annotation.highlights = highlights;
+                    var data = JSON.parse(data);
+                    data.highlights = highlights;
+
+                    // console.log("annotation1:")
+                    // console.log(annotation);
+                    // console.log("data1:")
+                    // console.log(data);
+
+                    return _this.updateAnnotation(annotation, data);
+                });
             } else {
                 console.log('old annotation');
                 return this.updateAnnotation(annotation, {});
@@ -77,7 +87,15 @@
             console.log(annotation);
             if (__indexOf.call(this.annotations, annotation) >= 0) {
                 // TODO
-                window.pyobject.eval_emacs_function('eaf-browser-annotator-update', [_this.options.fileNameMD5, annotation.id, JSON.stringify(annotation)]);
+                var highlights = annotation.highlights
+
+                var anno = this._dataFor(annotation);
+                window.pyobject.eval_emacs_function_return('eaf-browser-annotator-update', [_this.options.fileNameMD5, annotation.id, anno], function (data) {
+                    annotation.highlights = highlights;
+
+                    return annotation;
+                });
+
             }
         };
 
@@ -87,7 +105,9 @@
             var _this = this;
             if (__indexOf.call(this.annotations, annotation) >= 0) {
                 // TODO
-                window.pyobject.eval_emacs_function('eaf-browser-annotator-delete', [_this.options.fileNameMD5, annotation.id]);
+                window.pyobject.eval_emacs_function_return('eaf-browser-annotator-delete', [_this.options.fileNameMD5, annotation.id]);
+
+                _this.unregisterAnnotation(annotation);
             }
         };
 
@@ -100,22 +120,33 @@
         };
 
         StoreEAF.prototype.updateAnnotation = function(annotation, data) {
+            console.log("annotation2:")
+            console.log(annotation)
+            console.log("data2:")
+            console.log(data)
             if (__indexOf.call(this.annotations, annotation) < 0) {
                 console.error(Annotator._t("Trying to update unregistered annotation!"));
             } else {
                 $.extend(annotation, data);
             }
+            console.log("annotation2:")
+            console.log(annotation)
             return $(annotation.highlights).data('annotation', annotation);
         };
 
         StoreEAF.prototype.loadAnnotations = function() {
+            var _this = this;
             var fileNameMD5 = this.options.fileNameMD5;
             var fileFullName = this.options.fileFullName;
             console.log('loadAnnotations: fileNameMD5 ' + fileNameMD5 + ', fileFullName: ' + fileFullName);
             // TODO
-            // return this._apiRequest('read', null, this._onLoadAnnotations);
-            window.pyobject.eval_emacs_function('eaf-browser-annotator-load', [fileFullName, fileNameMD5]);
-            // this.options.pyobject.eval_emacs_function('eaf-browser-annotator-load', [fileFullName, fileNameMD5]);
+            window.pyobject.eval_emacs_function_return('eaf-browser-annotator-load', [fileFullName, fileNameMD5], function (data) {
+                console.log('loadAnnotations data:' + data);
+
+                annotations = JSON.parse(data);
+
+                _this._onLoadAnnotations(annotations);
+            });
         };
 
         StoreEAF.prototype._onLoadAnnotations = function(data) {

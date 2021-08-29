@@ -43,7 +43,7 @@
 ;;
 
 (require 'cl-lib)
-(require 'db)
+(require 'eaf-browser-annotator-db)
 
 (defcustom eaf-browser-enable-annotator nil
   ""
@@ -58,33 +58,29 @@
   ""
   :type 'boolean)
 
-(defcustom eaf-browser-annotator-db-location (expand-file-name (locate-user-emacs-file "eaf/db/"))
+(defcustom eaf-browser-annotator-db-location (expand-file-name (locate-user-emacs-file "eaf/annotations"))
   "A directory to store db files to."
   :type 'directory)
 
-(defvar eba--dbs (make-hash-table :test #'eq))
+(defvar eba--dbs (make-hash-table :test #'equal))
 
-(defun eba--get-db (id)
-  (let ((db (gethash id eba--dbs)))
+(defun eba--get-db (db-id)
+  (let ((db (gethash db-id eba--dbs)))
     (unless db
       (setq db (db-make `(db-hash
-                          :file-name ,(format "%s%s" eaf-browser-annotator-db-location id))))
-      (puthash id db eba--dbs)
+                          :filename ,(format "%s/%s" (string-trim-right eaf-browser-annotator-db-location "/") db-id))))
+      (puthash db-id db eba--dbs)
       )
     db
     )
   )
 
 (defun eba--new-id ()
-  (format "%d" (random 99999999))
+  (format "%d-%d" (time-convert nil 'integer) (random 99999999))
   )
 
-(defun eba--save (annotation)
-  )
-
-;; "{'highlights': [{'jQuery19109976706928828596': 30}], 'quote': '板块快速冲高，情绪非常高亢，很', 'ranges': [{'end': '/div[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[2]/p[3]', 'endOffset': 34, 'start': '/div[1]/div[1]/div[1]/div[2]/div[1]/div[1]/div[1]/div[1]/div[2]/p[3]', 'startOffset': 19}], 'tags': [], 'text': ''}"
 (defun eaf-browser-annotator-create (db-id annotation)
-  (message "create annotation %S" annotation)
+  (message "create annotation, db-id %s, annotation %S" db-id annotation)
   (let ((decoded (json-parse-string annotation))
         (anno-id (eba--new-id))
         (db (eba--get-db db-id))
@@ -104,14 +100,40 @@
 
 (defun eaf-browser-annotator-update (db-id anno-id annotation)
   (message "update annotation db-id %s, anno-id %s, annotation %S" db-id anno-id annotation)
+  (let ((db (eba--get-db db-id))
+        )
+    (db-put anno-id annotation db)
+
+    annotation
+    )
   )
 
 (defun eaf-browser-annotator-delete (db-id anno-id)
   (message "delete annotation db-id %s, anno-id %s" db-id anno-id)
+  (let ((db (eba--get-db db-id))
+        annotation)
+
+    (setq annotation (db-get anno-id db))
+
+    (message "annotation %s" annotation)
+
+    (db-del anno-id db)
+
+    anno-id
+    )  
   )
 
 (defun eaf-browser-annotator-load (file-full-name file-name-md5)
   (message "load annotations %s, %s" file-full-name file-name-md5)
+  (let ((db (eba--get-db file-name-md5))
+        db-values
+        annotations)
+    (when db
+      (setq annotations (db-map (lambda (k v) (json-parse-string v)) db))
+      (message "%S" annotations)
+      )
+    (json-encode annotations)
+    )
   )
 
 (provide 'eaf-browser-annotator)

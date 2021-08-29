@@ -84,6 +84,8 @@
 
 ;;; Code:
 
+(require 'eaf-browser-annotator)
+
 (defcustom eaf-browser-search-engines `(("google" . "http://www.google.com/search?ie=utf-8&oe=utf-8&q=%s")
                                         ("duckduckgo" . "https://duckduckgo.com/?q=%s"))
   "The default search engines offered by EAF.
