@@ -85,12 +85,9 @@
         (anno-id (eba--new-id))
         (db (eba--get-db db-id))
         encoded)
-    (message "decoded %S" decoded)
     (puthash "id" anno-id decoded)
 
     (setq encoded (json-encode-hash-table decoded))
-
-    (message "encoded %s" encoded)
 
     (db-put anno-id encoded db)
 
@@ -98,10 +95,13 @@
     )
   )
 
-(defun eaf-browser-annotator-update (db-id anno-id annotation)
-  (message "update annotation db-id %s, anno-id %s, annotation %S" db-id anno-id annotation)
+(defun eaf-browser-annotator-update (db-id annotation)
+  (message "update annotation db-id %s, annotation %S" db-id annotation)
   (let ((db (eba--get-db db-id))
+        (decoded (json-parse-string annotation))
+        anno-id
         )
+    (setq anno-id (gethash "id" decoded))
     (db-put anno-id annotation db)
 
     annotation
@@ -114,8 +114,6 @@
         annotation)
 
     (setq annotation (db-get anno-id db))
-
-    (message "annotation %s" annotation)
 
     (db-del anno-id db)
 
@@ -130,7 +128,6 @@
         annotations)
     (when db
       (setq annotations (db-map (lambda (k v) (json-parse-string v)) db))
-      (message "%S" annotations)
       )
     (json-encode annotations)
     )

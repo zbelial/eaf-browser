@@ -197,20 +197,21 @@ This is very useful for testing.")
   (unless db-hash-do-not-save
     (let ((filename (plist-get db :filename)))
       (when filename
+        (setq filename (concat filename ".el"))
         ;; Make the parent directory for the db if it doesn't exist
         (let ((dir (file-name-directory filename)))
           (unless (file-exists-p dir)
             (make-directory dir t)))
         ;; Now store the data
-        (with-temp-file (concat filename ".el")
+        (with-temp-file filename
           (erase-buffer)
           (let ((fmt-obj (format
                           "(throw 'return %S)"
                           (plist-get db :db))))
             (insert fmt-obj)))
         ;; And compile it and delete the original
-        (byte-compile-file (concat filename ".el"))
-        ;; (delete-file (concat filename ".el"))
+        (byte-compile-file filename)
+        ;; (delete-file filename)
         ))))
 
 
